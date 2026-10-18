@@ -504,6 +504,10 @@ async def check_public_types(client: DankMemer) -> None:
         await client.merchant_trades.for_item("Bank Note"),
         tuple[dankmemer.MerchantTrade, ...],
     )
+    assert_type(
+        await client.merchant_trades.for_item(12),
+        tuple[dankmemer.MerchantTrade, ...],
+    )
     assert_type(await client.items.fetch(), Page[Item])
     assert_type(client.items.iter(), AsyncIterator[Item])
     assert_type(await client.pets.fetch(), Page[Pet])

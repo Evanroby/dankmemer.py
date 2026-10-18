@@ -100,7 +100,7 @@ def _valid_origin(origin: object) -> str:
     if (
         not isinstance(origin, str)
         or not origin
-        or any(ord(char) < 33 for char in origin)
+        or any(ord(char) < 33 or ord(char) > 126 for char in origin)
     ):
         raise ConfigurationError(
             "origin must be an HTTPS scheme, host, and optional port"

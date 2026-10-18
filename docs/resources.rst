@@ -246,9 +246,11 @@ Lottery and merchant reads return ``None`` when the API explicitly reports
 null data. An HTTP failure is an exception, even if its status is 404.
 Unknown user IDs return ``False`` according to the API contract.
 
-``dank.merchant_trades.for_item("Life Saver")`` finds offers that require
-the named item. ``resolve_cost(trade)`` and ``resolve_reward(trade)``
-resolve supported reward references to their catalog models.
+``dank.merchant_trades.for_item(...)`` accepts an :class:`~dankmemer.Item`,
+an item ID, or an exact item name and finds offers that require it. Name
+lookups reuse the item catalog cache. ``resolve_cost(trade)`` and
+``resolve_reward(trade)`` resolve supported reward references to their catalog
+models.
 
 Publications
 ------------

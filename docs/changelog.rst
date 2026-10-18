@@ -1,6 +1,16 @@
 Release notes
 =============
 
+1.0.2
+-----
+
+* ``MerchantTrades.for_item`` now accepts an item model, item ID, or exact
+  item name, matching the other item-based filtering helpers.
+* SDK enum members and configurations containing them can now be copied,
+  deep-copied, and pickled. Enum members retain their canonical identity.
+* Origin values now reject non-ASCII characters before being sent as an HTTP
+  header.
+
 1.0.1
 -----
 

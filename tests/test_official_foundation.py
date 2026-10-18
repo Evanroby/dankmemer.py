@@ -1,7 +1,9 @@
 # pyright: reportPrivateUsage=false
 
 import asyncio
+import copy
 import logging
+import pickle
 from collections.abc import Callable, MutableMapping
 from datetime import timedelta
 from enum import Enum
@@ -19,6 +21,7 @@ from dankmemer.config import (
     CacheConfig,
     DailyPolling,
     DisabledPolling,
+    EventConfig,
     HourlyPolling,
     IntervalPolling,
     PollingConfig,
@@ -97,6 +100,19 @@ def test_enum_definitions_reject_duplicate_values_and_subclassing() -> None:
 
     with pytest.raises(TypeError):
         type("Extended", (ClientState,), {"EXTRA": "extra"})
+
+
+def test_runtime_enums_copy_and_pickle_as_canonical_members() -> None:
+    member = EventDelivery.DURABLE
+    assert copy.copy(member) is member
+    assert copy.deepcopy(member) is member
+    assert pickle.loads(pickle.dumps(member)) is member
+
+    config = EventConfig(delivery=member, emit_initial=True)
+    copied = copy.deepcopy(config)
+    restored = cast(EventConfig, pickle.loads(pickle.dumps(config)))
+    assert copied == restored == config
+    assert copied.delivery is restored.delivery is member
 
 
 @pytest.mark.parametrize(
@@ -181,6 +197,8 @@ def test_client_constructor_validates_without_allocating_session() -> None:
         {"token": "test", "origin": "https://example.test:0"},
         {"token": "test", "origin": "https://example.test:"},
         {"token": "test", "origin": "https://example.test:99999"},
+        {"token": "test", "origin": "https://example.test\x7f"},
+        {"token": "test", "origin": "https://éxample.test"},
         {"token": "test", "request": object()},
         {"token": "test", "silent": None},
         {"token": "test", "silent": True, "logger": logging.getLogger("test")},

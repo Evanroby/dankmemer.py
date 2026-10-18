@@ -686,15 +686,20 @@ async def test_merchant_item_names_offer_filters_and_related_models_reuse_catalo
     resource = MerchantTrades(
         responses, items=item_resource, baits=bait_resource, cache=cached()
     )
+    with pytest.raises(ConfigurationError):
+        await resource.for_item(-1)
+    assert responses.calls == []
     assert await resource.for_item("Missing") == ()
     assert responses.calls == []
     trades = await resource.for_item("BANK NOTE")
     assert len(trades) == 3
+    assert await resource.for_item(12) == trades
     rotation = await resource.today()
     assert rotation is not None and rotation.trades_requiring(12) == trades
     assert rotation.trades_rewarding("ITEM") == (trades[0],)
     cost = await resource.resolve_cost(trades[0])
     assert cost is not None and cost.name == "Bank Note"
+    assert await resource.for_item(cost) == trades
     assert await resource.resolve_reward(trades[0]) is cost
     resolved_bait = await resource.resolve_reward(trades[1])
     assert resolved_bait is not None and resolved_bait.name == "Bait"

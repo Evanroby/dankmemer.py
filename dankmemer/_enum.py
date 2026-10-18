@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from collections.abc import Iterator, Mapping
 from types import MappingProxyType
-from typing import ClassVar, cast
+from typing import ClassVar, Self, cast
 
 
 class _EnumMeta(type):
@@ -123,3 +123,12 @@ class _Enum(metaclass=_EnumMeta):
 
     def __hash__(self) -> int:
         return hash((type(self), self.value))
+
+    def __copy__(self) -> Self:
+        return self
+
+    def __deepcopy__(self, memo: dict[int, object]) -> Self:
+        return self
+
+    def __reduce__(self) -> tuple[object, tuple[str]]:
+        return type(self), (self.value,)

@@ -24,7 +24,7 @@ from dankmemer.models.catalog import Item
 from dankmemer.models.fishing import FishingBait
 
 from ._base import Requester, Resource
-from ._queries import boolean, model, normalise, optional_text
+from ._queries import boolean, integer, model, normalise, optional_text
 from .catalog import Items
 from .fishing import Baits
 
@@ -112,9 +112,9 @@ class MerchantTrades(Resource):
         return None if record is None else parse_merchant_rotation(record)
 
     async def for_item(
-        self, item: Item | str, *, refresh: bool = False
+        self, item: Item | int | str, *, refresh: bool = False
     ) -> tuple[MerchantTrade, ...]:
-        """Return today's offers requiring an item model or exact item name.
+        """Return today's offers requiring an item model, ID, or exact name.
 
         Name lookup shares the client's item catalog cache. Unknown names or
         absent rotation data produce an empty tuple. HTTP errors are raised.
@@ -126,7 +126,8 @@ class MerchantTrades(Resource):
             if found is None:
                 return ()
             item = found
-        item = model(item, Item, "item")
+        elif not isinstance(item, Item):
+            item = integer(item, "item")
         rotation = await self.today(refresh=refresh)
         return () if rotation is None else rotation.trades_requiring(item)
 
