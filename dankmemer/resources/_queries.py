@@ -3,7 +3,7 @@ from __future__ import annotations
 import math
 from collections.abc import Callable, Iterable
 from datetime import datetime
-from typing import TypeVar, cast
+from typing import TypeVar
 
 from rapidfuzz.fuzz import WRatio
 
@@ -37,9 +37,9 @@ def integer(value: object, name: str, *, minimum: int = 0) -> int:
 def tags(value: object | None) -> tuple[str, ...]:
     if value is None:
         return ()
-    if not isinstance(value, tuple):
-        raise ConfigurationError("tags must be a tuple of strings")
-    return tuple(normalise(text(tag, "tag")) for tag in cast(tuple[object, ...], value))
+    if isinstance(value, str) or not isinstance(value, Iterable):
+        raise ConfigurationError("tags must be a non-string iterable of strings")
+    return tuple(normalise(text(tag, "tag")) for tag in value)
 
 
 def optional_text(value: object | None, name: str) -> str | None:
