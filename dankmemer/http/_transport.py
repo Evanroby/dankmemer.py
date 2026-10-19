@@ -341,7 +341,7 @@ class Transport:
             delay = self._backoff(index, service_unavailable=response.status == 503)
             if response.status in (429, 503):
                 delay = max(delay, response.retry_after or 0.0)
-                await self._admission.cooldown(delay)
+                await self._admission.cooldown(delay, rate_limit=response.status == 429)
             if not retryable or index + 1 == self._retry.max_attempts:
                 raise error
             if (

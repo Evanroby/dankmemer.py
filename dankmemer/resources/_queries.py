@@ -39,7 +39,8 @@ def tags(value: object | None) -> tuple[str, ...]:
         return ()
     if isinstance(value, str) or not isinstance(value, Iterable):
         raise ConfigurationError("tags must be a non-string iterable of strings")
-    return tuple(normalise(text(tag, "tag")) for tag in value)
+    tags: Iterable[object] = value
+    return tuple(normalise(text(tag, "tag")) for tag in tags)
 
 
 def optional_text(value: object | None, name: str) -> str | None:
