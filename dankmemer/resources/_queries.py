@@ -107,10 +107,15 @@ def rank(
     fuzzy: bool,
     min_score: float,
     max_limit: int | None,
+    normalized_names: tuple[str, ...] | None = None,
 ) -> tuple[_T, ...]:
     matches: list[tuple[float, str, int, _T]] = []
     for position, record in enumerate(records):
-        candidate = normalise(name(record))
+        candidate = (
+            normalise(name(record))
+            if normalized_names is None
+            else normalized_names[position]
+        )
         if fuzzy:
             score = WRatio(query, candidate)
             if score < min_score:
