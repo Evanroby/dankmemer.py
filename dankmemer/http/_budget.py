@@ -63,14 +63,35 @@ class RequestBudget:
             self._last_attempt + 60.0 / self._minute.limit,
             self._cooldown_until,
         )
+        rate_limit_ready: float | None = None
+        retry_after: float | None = None
+        if self._cooldown_until > now:
+            rate_limit_ready = self._cooldown_until
+            retry_after = self._cooldown_until - now
         if self._minute.remaining == 0:
-            earliest = max(earliest, now + max(0.0, self._minute.resets_at - epoch))
+            minute_retry = max(0.0, self._minute.resets_at - epoch)
+            minute_ready = now + minute_retry
+            if rate_limit_ready is None or minute_ready >= rate_limit_ready:
+                rate_limit_ready = minute_ready
+                retry_after = minute_retry
+            earliest = max(earliest, minute_ready)
         if automatic and resource is not None:
             last = self._resource_last.get(resource)
             if last is not None:
                 earliest = max(earliest, last + 60.0)
 
         if deadline is not None and earliest >= deadline:
+            if (
+                rate_limit_ready is not None
+                and rate_limit_ready >= deadline
+                and retry_after is not None
+            ):
+                raise RateLimited(
+                    "rate limit wait exceeds the request deadline",
+                    status_code=429,
+                    path=path,
+                    retry_after_seconds=retry_after,
+                )
             raise DankMemerTimeoutError(
                 "request deadline expired while waiting for admission",
                 path=path,
